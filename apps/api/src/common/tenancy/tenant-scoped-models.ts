@@ -21,4 +21,13 @@ export const TENANT_SCOPED_MODELS = new Set<string>([
   'Sale',
   'SalePayment',
   'SaleDocument',
+  'ExpenseCategory',
+  'Expense',
+  'RecurringExpenseSchedule',
+  'Employee',
+  'Attendance',
+  'LeaveRequest',
+  'EmployeePerformance',
+  'Reminder',
+  'Notification',
 ]);

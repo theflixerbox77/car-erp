@@ -70,6 +70,15 @@ model Tenant {
   sales                      Sale[]
   salePayments               SalePayment[]
   saleDocuments               SaleDocument[]
+  expenseCategories           ExpenseCategory[]
+  expenses                    Expense[]
+  recurringExpenseSchedules   RecurringExpenseSchedule[]
+  employees                   Employee[]
+  attendance                  Attendance[]
+  leaveRequests                LeaveRequest[]
+  employeePerformance         EmployeePerformance[]
+  reminders                   Reminder[]
+  notifications                Notification[]
 
   @@map("tenants")
 }
@@ -84,6 +93,7 @@ model Role {
   tenant           Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   users            User[]
   rolePermissions  RolePermission[]
+  employees        Employee[]
 
   @@unique([tenantId, name])
   @@index([tenantId])
@@ -204,6 +214,7 @@ model Vehicle {
   interestedBy  CustomerInterestedVehicle[]
   leads         Lead[]
   sales         Sale[]
+  expenses      Expense[]
 
   @@unique([tenantId, stockNumber])
   @@index([tenantId])
@@ -418,4 +429,185 @@ model SaleDocument {
   @@index([saleId])
   @@index([tenantId])
   @@map("sale_documents")
+}
+
+model ExpenseCategory {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId            String   @map("tenant_id") @db.Uuid
+  name                String
+  isRecurringDefault  Boolean  @default(false) @map("is_recurring_default")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  tenant                   Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  expenses                 Expense[]
+  recurringExpenseSchedules RecurringExpenseSchedule[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("expense_categories")
+}
+
+model Expense {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId            String    @map("tenant_id") @db.Uuid
+  categoryId          String    @map("category_id") @db.Uuid
+  vehicleId           String?   @map("vehicle_id") @db.Uuid
+  amount              Decimal   @db.Decimal(14, 2)
+  description         String?
+  receiptUrl          String?   @map("receipt_url")
+  receiptStoragePath  String?   @map("receipt_storage_path")
+  expenseDate         DateTime  @default(now()) @map("expense_date") @db.Date
+  isRecurring         Boolean   @default(false) @map("is_recurring")
+  status              String    @default("pending")
+  submittedBy         String?   @map("submitted_by") @db.Uuid
+  approvedBy          String?   @map("approved_by") @db.Uuid
+  approvedAt          DateTime? @map("approved_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @default(now()) @map("updated_at")
+
+  tenant   Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  category ExpenseCategory @relation(fields: [categoryId], references: [id])
+  vehicle  Vehicle?        @relation(fields: [vehicleId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("expenses")
+}
+
+model RecurringExpenseSchedule {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  categoryId   String   @map("category_id") @db.Uuid
+  amount       Decimal  @db.Decimal(14, 2)
+  description  String?
+  frequency    String
+  nextRunDate  DateTime @map("next_run_date") @db.Date
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  tenant   Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  category ExpenseCategory @relation(fields: [categoryId], references: [id])
+
+  @@index([tenantId])
+  @@map("recurring_expense_schedules")
+}
+
+model Employee {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId         String    @map("tenant_id") @db.Uuid
+  userId           String?   @map("user_id") @db.Uuid
+  fullName         String    @map("full_name")
+  phone            String?
+  email            String?
+  roleId           String?   @map("role_id") @db.Uuid
+  employmentStatus String    @default("active") @map("employment_status")
+  hireDate         DateTime? @map("hire_date") @db.Date
+  salaryAmount     Decimal?  @map("salary_amount") @db.Decimal(14, 2)
+  salaryType       String?   @map("salary_type")
+  commissionRate   Decimal?  @map("commission_rate") @db.Decimal(5, 2)
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @default(now()) @map("updated_at")
+
+  tenant       Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  role         Role?                @relation(fields: [roleId], references: [id])
+  attendance   Attendance[]
+  leaveRequests LeaveRequest[]
+  performance  EmployeePerformance[]
+
+  @@index([tenantId])
+  @@map("employees")
+}
+
+model Attendance {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId      String    @map("tenant_id") @db.Uuid
+  employeeId    String    @map("employee_id") @db.Uuid
+  date          DateTime  @db.Date
+  checkInTime   DateTime? @map("check_in_time")
+  checkOutTime  DateTime? @map("check_out_time")
+  status        String    @default("present")
+  note          String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, date])
+  @@index([tenantId])
+  @@map("attendance")
+}
+
+model LeaveRequest {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  employeeId String   @map("employee_id") @db.Uuid
+  type       String   @default("other")
+  startDate  DateTime @map("start_date") @db.Date
+  endDate    DateTime @map("end_date") @db.Date
+  status     String   @default("pending")
+  approvedBy String?  @map("approved_by") @db.Uuid
+  reason     String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("leave_requests")
+}
+
+model EmployeePerformance {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  employeeId  String   @map("employee_id") @db.Uuid
+  periodStart DateTime @map("period_start") @db.Date
+  periodEnd   DateTime @map("period_end") @db.Date
+  metrics     Json     @default("{}")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("employee_performance")
+}
+
+model Reminder {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String    @map("tenant_id") @db.Uuid
+  type               String
+  relatedCustomerId  String?   @map("related_customer_id") @db.Uuid
+  relatedSaleId      String?   @map("related_sale_id") @db.Uuid
+  relatedVehicleId   String?   @map("related_vehicle_id") @db.Uuid
+  dueAt              DateTime  @map("due_at")
+  status             String    @default("pending")
+  assignedTo         String?   @map("assigned_to") @db.Uuid
+  note               String?
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, status, dueAt])
+  @@map("reminders")
+}
+
+model Notification {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String   @map("tenant_id") @db.Uuid
+  userId             String?  @map("user_id") @db.Uuid
+  title              String
+  body               String?
+  type               String   @default("general")
+  relatedEntityType  String?  @map("related_entity_type")
+  relatedEntityId    String?  @map("related_entity_id") @db.Uuid
+  isRead             Boolean  @default(false) @map("is_read")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId, isRead])
+  @@map("notifications")
 }
