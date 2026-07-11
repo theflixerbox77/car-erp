@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { api } from "@/lib/api";
+import { getCurrentUser } from "@/lib/dal";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import Badge from "@/components/ui/badge/Badge";
 import StatTile from "@/components/reports/StatTile";
@@ -17,6 +19,14 @@ function money(value: string | number) {
 }
 
 export default async function DashboardPage() {
+  const user = await getCurrentUser();
+  // Platform admins have no tenant, so none of the dealer-scoped report/sales
+  // endpoints below are reachable for them (TenantScopedGuard rejects them) --
+  // send them to the platform-admin view instead of crashing this render.
+  if (user?.isPlatformAdmin) {
+    redirect("/platform/dealers");
+  }
+
   const [inventory, leads, sales, recentSales] = await Promise.all([
     api.get<InventoryReport>("/reports/inventory"),
     api.get<LeadsReport>("/reports/leads"),

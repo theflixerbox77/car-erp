@@ -29,7 +29,7 @@ export default function AdminShell({
   return (
     <div className="min-h-screen xl:flex">
       {/* Sidebar and Backdrop */}
-      <AppSidebar />
+      <AppSidebar isPlatformAdmin={user.isPlatformAdmin} />
       <Backdrop />
       {/* Main Content Area */}
       <div

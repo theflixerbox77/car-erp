@@ -83,11 +83,20 @@ const navItems: NavItem[] = [
   },
 ];
 
+const platformNavItems: NavItem[] = [
+  {
+    icon: <GroupIcon />,
+    name: "Dealers",
+    path: "/platform/dealers",
+  },
+];
+
 const othersItems: NavItem[] = [];
 
-const AppSidebar: React.FC = () => {
+const AppSidebar: React.FC<{ isPlatformAdmin?: boolean }> = ({ isPlatformAdmin = false }) => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+  const mainNavItems = isPlatformAdmin ? platformNavItems : navItems;
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -231,7 +240,7 @@ const AppSidebar: React.FC = () => {
     // Check if the current path matches any submenu item
     let submenuMatched = false;
     ["main", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? navItems : othersItems;
+      const items = menuType === "main" ? mainNavItems : othersItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
@@ -252,7 +261,7 @@ const AppSidebar: React.FC = () => {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs open submenu to route changes; openSubmenu is also toggled independently by user clicks, so it can't be derived purely at render time
       setOpenSubmenu(null);
     }
-  }, [pathname,isActive]);
+  }, [pathname, isActive, mainNavItems]);
 
   useEffect(() => {
     // Set the height of the submenu items when the submenu is opened
@@ -345,7 +354,7 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(navItems, "main")}
+              {renderMenuItems(mainNavItems, "main")}
             </div>
 
             {othersItems.length > 0 && (
