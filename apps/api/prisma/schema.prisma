@@ -62,6 +62,14 @@ model Tenant {
   vehicles            Vehicle[]
   vehicleMedia        VehicleMedia[]
   vehicleStatusHistory VehicleStatusHistory[]
+  customers                  Customer[]
+  customerInterestedVehicles CustomerInterestedVehicle[]
+  customerInteractions       CustomerInteraction[]
+  leads                      Lead[]
+  leadStageHistory           LeadStageHistory[]
+  sales                      Sale[]
+  salePayments               SalePayment[]
+  saleDocuments               SaleDocument[]
 
   @@map("tenants")
 }
@@ -193,6 +201,9 @@ model Vehicle {
   tenant        Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   media         VehicleMedia[]
   statusHistory VehicleStatusHistory[]
+  interestedBy  CustomerInterestedVehicle[]
+  leads         Lead[]
+  sales         Sale[]
 
   @@unique([tenantId, stockNumber])
   @@index([tenantId])
@@ -238,4 +249,173 @@ model VehicleStatusHistory {
   @@index([vehicleId])
   @@index([tenantId])
   @@map("vehicle_status_history")
+}
+
+model Customer {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId              String    @map("tenant_id") @db.Uuid
+  fullName              String    @map("full_name")
+  phone                 String?
+  email                 String?
+  address               String?
+  nidNumber             String?   @map("nid_number")
+  licenseNumber         String?   @map("license_number")
+  notes                 String?
+  source                String?
+  assignedSalespersonId String?   @map("assigned_salesperson_id") @db.Uuid
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @default(now()) @map("updated_at")
+
+  tenant       Tenant                        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  interests    CustomerInterestedVehicle[]
+  interactions CustomerInteraction[]
+  leads        Lead[]
+  sales        Sale[]
+
+  @@index([tenantId])
+  @@map("customers")
+}
+
+model CustomerInterestedVehicle {
+  customerId String   @map("customer_id") @db.Uuid
+  vehicleId  String   @map("vehicle_id") @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  vehicle  Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([customerId, vehicleId])
+  @@index([tenantId])
+  @@map("customer_interested_vehicles")
+}
+
+model CustomerInteraction {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId String   @map("customer_id") @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  type       String
+  summary    String
+  occurredAt DateTime @default(now()) @map("occurred_at")
+  createdBy  String?  @map("created_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([tenantId])
+  @@map("customer_interactions")
+}
+
+model Lead {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId          String    @map("tenant_id") @db.Uuid
+  customerId        String    @map("customer_id") @db.Uuid
+  vehicleId         String?   @map("vehicle_id") @db.Uuid
+  source            String?
+  stage             String    @default("new")
+  assignedTo        String?   @map("assigned_to") @db.Uuid
+  expectedCloseDate DateTime? @map("expected_close_date") @db.Date
+  lostReason        String?   @map("lost_reason")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @default(now()) @map("updated_at")
+
+  tenant       Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer     Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  vehicle      Vehicle?           @relation(fields: [vehicleId], references: [id])
+  stageHistory LeadStageHistory[]
+  sales        Sale[]
+
+  @@index([tenantId])
+  @@index([tenantId, stage])
+  @@map("leads")
+}
+
+model LeadStageHistory {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  leadId     String   @map("lead_id") @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  fromStage  String?  @map("from_stage")
+  toStage    String   @map("to_stage")
+  changedBy  String?  @map("changed_by") @db.Uuid
+  note       String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([tenantId])
+  @@map("lead_stage_history")
+}
+
+model Sale {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId        String    @map("tenant_id") @db.Uuid
+  leadId          String?   @map("lead_id") @db.Uuid
+  customerId      String    @map("customer_id") @db.Uuid
+  vehicleId       String    @map("vehicle_id") @db.Uuid
+  salespersonId   String?   @map("salesperson_id") @db.Uuid
+  salePrice       Decimal   @map("sale_price") @db.Decimal(14, 2)
+  discount        Decimal   @default(0) @db.Decimal(14, 2)
+  commissionRate  Decimal   @default(0) @map("commission_rate") @db.Decimal(5, 2)
+  commissionAmount Decimal  @default(0) @map("commission_amount") @db.Decimal(14, 2)
+  profit          Decimal   @default(0) @db.Decimal(14, 2)
+  paymentStatus   String    @default("pending") @map("payment_status")
+  deliveryDate    DateTime? @map("delivery_date") @db.Date
+  warrantyMonths  Int?      @map("warranty_months")
+  warrantyNotes   String?   @map("warranty_notes")
+  status          String    @default("active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @map("updated_at")
+
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lead      Lead?          @relation(fields: [leadId], references: [id])
+  customer  Customer       @relation(fields: [customerId], references: [id])
+  vehicle   Vehicle        @relation(fields: [vehicleId], references: [id])
+  payments  SalePayment[]
+  documents SaleDocument[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("sales")
+}
+
+model SalePayment {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  saleId        String   @map("sale_id") @db.Uuid
+  tenantId      String   @map("tenant_id") @db.Uuid
+  amount        Decimal  @db.Decimal(14, 2)
+  method        String
+  paidAt        DateTime @default(now()) @map("paid_at")
+  referenceNote String?  @map("reference_note")
+  recordedBy    String?  @map("recorded_by") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([saleId])
+  @@index([tenantId])
+  @@map("sale_payments")
+}
+
+model SaleDocument {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  saleId      String   @map("sale_id") @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  type        String
+  storagePath String   @map("storage_path")
+  version     Int      @default(1)
+  generatedBy String?  @map("generated_by") @db.Uuid
+  generatedAt DateTime @default(now()) @map("generated_at")
+
+  sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([saleId])
+  @@index([tenantId])
+  @@map("sale_documents")
 }

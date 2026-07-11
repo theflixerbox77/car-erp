@@ -10,6 +10,9 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { TenantsModule } from './tenants/tenants.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
+import { CrmModule } from './crm/crm.module';
+import { LeadsModule } from './leads/leads.module';
+import { SalesModule } from './sales/sales.module';
 import { TenantContextMiddleware } from './common/tenancy/tenant-context.middleware';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
@@ -24,6 +27,9 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
     UsersModule,
     TenantsModule,
     VehiclesModule,
+    CrmModule,
+    LeadsModule,
+    SalesModule,
   ],
   controllers: [AppController],
   providers: [
