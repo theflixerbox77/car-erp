@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
@@ -98,7 +99,7 @@ model User {
   approvedTenants     Tenant[]    @relation("TenantApprovedBy")
   auditLogs           AuditLog[]
 
-  @@unique([tenantId, email])
+  @@unique([email])
   @@index([tenantId])
   @@map("users")
 }
