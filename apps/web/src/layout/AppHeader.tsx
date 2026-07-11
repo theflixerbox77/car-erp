@@ -7,8 +7,9 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useState ,useEffect,useRef} from "react";
 import type { CurrentUser } from "@/lib/dal";
+import type { AppNotification } from "@/lib/types/ops";
 
-const AppHeader: React.FC<{ user: CurrentUser }> = ({ user }) => {
+const AppHeader: React.FC<{ user: CurrentUser; notifications: AppNotification[] }> = ({ user, notifications }) => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
 
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
@@ -166,7 +167,7 @@ const AppHeader: React.FC<{ user: CurrentUser }> = ({ user }) => {
             <ThemeToggleButton />
             {/* <!-- Dark Mode Toggler --> */}
 
-           <NotificationDropdown /> 
+           <NotificationDropdown notifications={notifications} /> 
             {/* <!-- Notification Menu Area --> */}
           </div>
           {/* <!-- User Area --> */}

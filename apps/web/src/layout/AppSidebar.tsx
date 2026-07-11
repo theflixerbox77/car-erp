@@ -8,7 +8,9 @@ import {
   BoxCubeIcon,
   CalenderIcon,
   ChevronDownIcon,
+  DollarLineIcon,
   GridIcon,
+  GroupIcon,
   HorizontaLDots,
   ListIcon,
   PageIcon,
@@ -49,6 +51,22 @@ const navItems: NavItem[] = [
     icon: <UserCircleIcon />,
     name: "Customers",
     path: "/dealer/crm/customers",
+  },
+  {
+    icon: <DollarLineIcon />,
+    name: "Expenses",
+    subItems: [
+      { name: "All Expenses", path: "/dealer/expenses", pro: false },
+      { name: "Recurring", path: "/dealer/expenses/recurring", pro: false },
+    ],
+  },
+  {
+    icon: <GroupIcon />,
+    name: "Employees",
+    subItems: [
+      { name: "All Employees", path: "/dealer/employees", pro: false },
+      { name: "Leave Requests", path: "/dealer/employees/leave-requests", pro: false },
+    ],
   },
   {
     icon: <CalenderIcon />,
