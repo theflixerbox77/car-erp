@@ -61,6 +61,11 @@ const navItems: NavItem[] = [
     ],
   },
   {
+    icon: <PieChartIcon />,
+    name: "Reports",
+    path: "/dealer/reports/sales",
+  },
+  {
     icon: <GroupIcon />,
     name: "Employees",
     subItems: [
