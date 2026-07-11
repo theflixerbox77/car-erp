@@ -41,4 +41,20 @@ export const api = {
   get: <T>(path: string) => request<T>(path, { method: "GET", authenticated: true }),
   post: <T>(path: string, data?: unknown) => request<T>(path, { method: "POST", body: data ? JSON.stringify(data) : undefined, authenticated: true }),
   patch: <T>(path: string, data?: unknown) => request<T>(path, { method: "PATCH", body: data ? JSON.stringify(data) : undefined, authenticated: true }),
+  delete: <T>(path: string) => request<T>(path, { method: "DELETE", authenticated: true }),
 };
+
+/** multipart/form-data uploads — no Content-Type header, fetch sets the boundary itself. */
+export async function apiUpload<T>(path: string, formData: FormData): Promise<T> {
+  const token = await getAccessToken();
+  const res = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    body: formData,
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    cache: "no-store",
+  });
+  const isJson = res.headers.get("content-type")?.includes("application/json");
+  const body = isJson ? await res.json() : undefined;
+  if (!res.ok) throw new ApiError(res.status, body);
+  return body as T;
+}
