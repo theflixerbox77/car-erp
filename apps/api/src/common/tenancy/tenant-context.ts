@@ -8,12 +8,16 @@ export interface RequestTenantContext {
   userId: string | null;
 }
 
-export const tenantContextStorage = new AsyncLocalStorage<RequestTenantContext>();
+export const tenantContextStorage =
+  new AsyncLocalStorage<RequestTenantContext>();
 
 export function getTenantContext(): RequestTenantContext | undefined {
   return tenantContextStorage.getStore();
 }
 
-export function runWithTenantContext<T>(context: RequestTenantContext, fn: () => T): T {
+export function runWithTenantContext<T>(
+  context: RequestTenantContext,
+  fn: () => T,
+): T {
   return tenantContextStorage.run(context, fn);
 }

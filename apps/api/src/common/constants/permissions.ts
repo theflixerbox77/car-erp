@@ -29,40 +29,62 @@ export const PERMISSION_CATALOG: { code: string; module: string }[] = [
   { code: 'team.manage', module: 'settings' },
 ];
 
-export const SYSTEM_ROLE_TEMPLATES: { name: string; permissions: string[] }[] = [
-  {
-    name: 'Owner',
-    permissions: PERMISSION_CATALOG.map((p) => p.code),
-  },
-  {
-    name: 'Manager',
-    permissions: [
-      'inventory.view', 'inventory.create', 'inventory.update',
-      'sales.view', 'sales.create', 'sales.update',
-      'crm.view', 'crm.manage',
-      'expenses.view', 'expenses.create', 'expenses.approve',
-      'employees.view', 'employees.manage',
-      'reports.view',
-    ],
-  },
-  {
-    name: 'Sales',
-    permissions: ['inventory.view', 'sales.view', 'sales.create', 'sales.update', 'crm.view', 'crm.manage'],
-  },
-  {
-    name: 'Accountant',
-    permissions: ['expenses.view', 'expenses.create', 'expenses.approve', 'reports.view', 'sales.view'],
-  },
-  {
-    name: 'Mechanic',
-    permissions: ['inventory.view', 'inventory.update'],
-  },
-  {
-    name: 'Driver',
-    permissions: ['inventory.view'],
-  },
-  {
-    name: 'Reception',
-    permissions: ['inventory.view', 'crm.view', 'crm.manage'],
-  },
-];
+export const SYSTEM_ROLE_TEMPLATES: { name: string; permissions: string[] }[] =
+  [
+    {
+      name: 'Owner',
+      permissions: PERMISSION_CATALOG.map((p) => p.code),
+    },
+    {
+      name: 'Manager',
+      permissions: [
+        'inventory.view',
+        'inventory.create',
+        'inventory.update',
+        'sales.view',
+        'sales.create',
+        'sales.update',
+        'crm.view',
+        'crm.manage',
+        'expenses.view',
+        'expenses.create',
+        'expenses.approve',
+        'employees.view',
+        'employees.manage',
+        'reports.view',
+      ],
+    },
+    {
+      name: 'Sales',
+      permissions: [
+        'inventory.view',
+        'sales.view',
+        'sales.create',
+        'sales.update',
+        'crm.view',
+        'crm.manage',
+      ],
+    },
+    {
+      name: 'Accountant',
+      permissions: [
+        'expenses.view',
+        'expenses.create',
+        'expenses.approve',
+        'reports.view',
+        'sales.view',
+      ],
+    },
+    {
+      name: 'Mechanic',
+      permissions: ['inventory.view', 'inventory.update'],
+    },
+    {
+      name: 'Driver',
+      permissions: ['inventory.view'],
+    },
+    {
+      name: 'Reception',
+      permissions: ['inventory.view', 'crm.view', 'crm.manage'],
+    },
+  ];

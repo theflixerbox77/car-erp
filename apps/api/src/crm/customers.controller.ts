@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
@@ -39,13 +48,30 @@ export class CustomersController {
 
   @Post(':id/interactions')
   @Permissions('crm.manage')
-  addInteraction(@CurrentUser() user: RequestUser, @Param('id') id: string, @Body() dto: CreateInteractionDto) {
-    return this.customersService.addInteraction(user.tenantId as string, id, user.id, dto);
+  addInteraction(
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: CreateInteractionDto,
+  ) {
+    return this.customersService.addInteraction(
+      user.tenantId as string,
+      id,
+      user.id,
+      dto,
+    );
   }
 
   @Post(':id/interested-vehicles/:vehicleId')
   @Permissions('crm.manage')
-  addInterestedVehicle(@CurrentUser() user: RequestUser, @Param('id') id: string, @Param('vehicleId') vehicleId: string) {
-    return this.customersService.addInterestedVehicle(user.tenantId as string, id, vehicleId);
+  addInterestedVehicle(
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+    @Param('vehicleId') vehicleId: string,
+  ) {
+    return this.customersService.addInterestedVehicle(
+      user.tenantId as string,
+      id,
+      vehicleId,
+    );
   }
 }

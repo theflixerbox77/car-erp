@@ -33,7 +33,19 @@ export class CustomersService {
       where: { id },
       include: {
         interactions: { orderBy: { occurredAt: 'desc' } },
-        interests: { include: { vehicle: { select: { id: true, brand: true, model: true, year: true, stockNumber: true } } } },
+        interests: {
+          include: {
+            vehicle: {
+              select: {
+                id: true,
+                brand: true,
+                model: true,
+                year: true,
+                stockNumber: true,
+              },
+            },
+          },
+        },
         leads: { orderBy: { createdAt: 'desc' } },
         sales: { orderBy: { createdAt: 'desc' } },
       },
@@ -48,12 +60,19 @@ export class CustomersService {
   }
 
   private async requireExists(id: string) {
-    const customer = await this.prisma.client.customer.findUnique({ where: { id } });
+    const customer = await this.prisma.client.customer.findUnique({
+      where: { id },
+    });
     if (!customer) throw new NotFoundException('Customer not found');
     return customer;
   }
 
-  async addInteraction(tenantId: string, customerId: string, userId: string, dto: CreateInteractionDto) {
+  async addInteraction(
+    tenantId: string,
+    customerId: string,
+    userId: string,
+    dto: CreateInteractionDto,
+  ) {
     await this.requireExists(customerId);
     return this.prisma.client.customerInteraction.create({
       data: {
@@ -67,7 +86,11 @@ export class CustomersService {
     });
   }
 
-  async addInterestedVehicle(tenantId: string, customerId: string, vehicleId: string) {
+  async addInterestedVehicle(
+    tenantId: string,
+    customerId: string,
+    vehicleId: string,
+  ) {
     await this.requireExists(customerId);
     return this.prisma.client.customerInterestedVehicle.upsert({
       where: { customerId_vehicleId: { customerId, vehicleId } },

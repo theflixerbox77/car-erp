@@ -1,4 +1,17 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { VehiclesService } from './vehicles.service';
 import { VehicleMediaService } from './vehicle-media.service';
@@ -41,14 +54,27 @@ export class VehiclesController {
 
   @Patch(':id')
   @Permissions('inventory.update')
-  update(@CurrentUser() user: RequestUser, @Param('id') id: string, @Body() dto: UpdateVehicleDto) {
+  update(
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateVehicleDto,
+  ) {
     return this.vehiclesService.update(user.tenantId as string, id, dto);
   }
 
   @Patch(':id/status')
   @Permissions('inventory.update')
-  changeStatus(@CurrentUser() user: RequestUser, @Param('id') id: string, @Body() dto: ChangeStatusDto) {
-    return this.vehiclesService.changeStatus(user.tenantId as string, id, user.id, dto);
+  changeStatus(
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: ChangeStatusDto,
+  ) {
+    return this.vehiclesService.changeStatus(
+      user.tenantId as string,
+      id,
+      user.id,
+      dto,
+    );
   }
 
   @Delete(':id')
@@ -59,7 +85,11 @@ export class VehiclesController {
 
   @Post(':id/media')
   @Permissions('inventory.update')
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_MEDIA_FILE_SIZE_BYTES } }))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: MAX_MEDIA_FILE_SIZE_BYTES },
+    }),
+  )
   uploadMedia(
     @CurrentUser() user: RequestUser,
     @Param('id') id: string,
@@ -67,24 +97,43 @@ export class VehiclesController {
     @UploadedFile() file?: Express.Multer.File,
   ) {
     if (!file) throw new BadRequestException('No file provided');
-    return this.mediaService.upload(user.tenantId as string, id, user.id, type, file);
+    return this.mediaService.upload(
+      user.tenantId as string,
+      id,
+      user.id,
+      type,
+      file,
+    );
   }
 
   @Delete(':id/media/:mediaId')
   @Permissions('inventory.update')
-  removeMedia(@CurrentUser() user: RequestUser, @Param('id') id: string, @Param('mediaId') mediaId: string) {
+  removeMedia(
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+    @Param('mediaId') mediaId: string,
+  ) {
     return this.mediaService.remove(user.tenantId as string, id, mediaId);
   }
 
   @Patch(':id/media/:mediaId/primary')
   @Permissions('inventory.update')
-  setPrimaryMedia(@CurrentUser() user: RequestUser, @Param('id') id: string, @Param('mediaId') mediaId: string) {
+  setPrimaryMedia(
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+    @Param('mediaId') mediaId: string,
+  ) {
     return this.mediaService.setPrimary(user.tenantId as string, id, mediaId);
   }
 
   @Get(':id/media/:mediaId/signed-url')
   @Permissions('inventory.view')
-  getSignedDocumentUrl(@Param('id') id: string, @Param('mediaId') mediaId: string) {
-    return this.mediaService.getSignedDocumentUrl(id, mediaId).then((url) => ({ url }));
+  getSignedDocumentUrl(
+    @Param('id') id: string,
+    @Param('mediaId') mediaId: string,
+  ) {
+    return this.mediaService
+      .getSignedDocumentUrl(id, mediaId)
+      .then((url) => ({ url }));
   }
 }

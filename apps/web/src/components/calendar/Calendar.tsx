@@ -39,7 +39,9 @@ const Calendar: React.FC = () => {
   };
 
   useEffect(() => {
-    // Initialize with some events
+    // Demo-only seed data (this page is unreached from nav) -- kept as a client-only
+    // effect since FullCalendar itself is client-rendered.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setEvents([
       {
         id: "1",
@@ -99,6 +101,7 @@ const Calendar: React.FC = () => {
     } else {
       // Add new event
       const newEvent: CalendarEvent = {
+        // eslint-disable-next-line react-hooks/purity -- runs in a click handler, not during render
         id: Date.now().toString(),
         title: eventTitle,
         start: eventStartDate,

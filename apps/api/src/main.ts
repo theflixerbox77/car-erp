@@ -9,9 +9,12 @@ async function bootstrap() {
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.enableCors({
-    origin: [process.env.WEB_APP_URL ?? 'http://localhost:3000', process.env.STOREFRONT_APP_URL ?? 'http://localhost:3001'],
+    origin: [
+      process.env.WEB_APP_URL ?? 'http://localhost:3000',
+      process.env.STOREFRONT_APP_URL ?? 'http://localhost:3001',
+    ],
     credentials: true,
   });
   await app.listen(process.env.PORT ?? 4000);
 }
-bootstrap();
+void bootstrap();

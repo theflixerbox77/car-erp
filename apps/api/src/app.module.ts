@@ -2,9 +2,11 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
+import { AuditLogModule } from './common/audit/audit-log.module';
 import { StorageModule } from './storage/storage.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -19,6 +21,7 @@ import { SchedulingModule } from './scheduling/scheduling.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ReportsModule } from './reports/reports.module';
 import { StorefrontModule } from './storefront/storefront.module';
+import { SettingsModule } from './settings/settings.module';
 import { TenantContextMiddleware } from './common/tenancy/tenant-context.middleware';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
@@ -27,7 +30,9 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     JwtModule.register({}),
+    ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]),
     PrismaModule,
+    AuditLogModule,
     StorageModule,
     AuthModule,
     UsersModule,
@@ -42,11 +47,13 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
     NotificationsModule,
     ReportsModule,
     StorefrontModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     TenantContextMiddleware,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: PermissionsGuard },
   ],

@@ -27,7 +27,13 @@ export function toPublicVehicle(v: {
   status: string;
   isFeatured: boolean;
   createdAt: Date;
-  media?: { id: string; type: string; url: string; isPrimary: boolean; sortOrder: number }[];
+  media?: {
+    id: string;
+    type: string;
+    url: string;
+    isPrimary: boolean;
+    sortOrder: number;
+  }[];
 }) {
   return {
     id: v.id,
@@ -53,7 +59,12 @@ export function toPublicVehicle(v: {
     media: (v.media ?? [])
       .filter((m) => m.type !== 'document')
       .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((m) => ({ id: m.id, type: m.type, url: m.url, isPrimary: m.isPrimary })),
+      .map((m) => ({
+        id: m.id,
+        type: m.type,
+        url: m.url,
+        isPrimary: m.isPrimary,
+      })),
   };
 }
 
@@ -80,8 +91,20 @@ export const PUBLIC_VEHICLE_SELECT = {
   status: true,
   isFeatured: true,
   createdAt: true,
-  media: { select: { id: true, type: true, url: true, isPrimary: true, sortOrder: true } },
+  media: {
+    select: {
+      id: true,
+      type: true,
+      url: true,
+      isPrimary: true,
+      sortOrder: true,
+    },
+  },
 } as const;
 
 /** Statuses a visitor is allowed to browse; sold/hidden/repairing/in_transit never appear publicly. */
-export const PUBLIC_VEHICLE_STATUSES = ['available', 'reserved', 'booked'] as const;
+export const PUBLIC_VEHICLE_STATUSES = [
+  'available',
+  'reserved',
+  'booked',
+] as const;

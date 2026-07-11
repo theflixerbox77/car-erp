@@ -1,6 +1,14 @@
 import { IsIn, IsOptional, IsString } from 'class-validator';
 
-const STATUSES = ['available', 'reserved', 'sold', 'in_transit', 'repairing', 'booked', 'hidden'] as const;
+const STATUSES = [
+  'available',
+  'reserved',
+  'sold',
+  'in_transit',
+  'repairing',
+  'booked',
+  'hidden',
+] as const;
 
 export class ChangeStatusDto {
   @IsIn(STATUSES)

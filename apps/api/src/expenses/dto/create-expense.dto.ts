@@ -1,5 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsBoolean, IsDateString, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsDateString,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+} from 'class-validator';
 
 export class CreateExpenseDto {
   @IsUUID()
@@ -7,7 +15,9 @@ export class CreateExpenseDto {
 
   @IsOptional() @IsUUID() vehicleId?: string;
 
-  @IsNumber() @Min(0.01) @Type(() => Number)
+  @IsNumber()
+  @Min(0.01)
+  @Type(() => Number)
   amount!: number;
 
   @IsOptional() @IsString() description?: string;

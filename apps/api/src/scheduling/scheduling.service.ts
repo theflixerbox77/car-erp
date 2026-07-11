@@ -47,11 +47,15 @@ export class SchedulingService {
       });
       await db.recurringExpenseSchedule.update({
         where: { id: schedule.id },
-        data: { nextRunDate: addInterval(schedule.nextRunDate, schedule.frequency) },
+        data: {
+          nextRunDate: addInterval(schedule.nextRunDate, schedule.frequency),
+        },
       });
       created += 1;
     }
-    this.logger.log(`Generated ${created} recurring expense(s) from ${dueSchedules.length} due schedule(s).`);
+    this.logger.log(
+      `Generated ${created} recurring expense(s) from ${dueSchedules.length} due schedule(s).`,
+    );
     return { generated: created };
   }
 
@@ -63,8 +67,19 @@ export class SchedulingService {
     lookahead.setDate(lookahead.getDate() + WARRANTY_LOOKAHEAD_DAYS);
 
     const candidateSales = await db.sale.findMany({
-      where: { status: 'active', deliveryDate: { not: null }, warrantyMonths: { not: null } },
-      select: { id: true, tenantId: true, deliveryDate: true, warrantyMonths: true, salespersonId: true, customerId: true },
+      where: {
+        status: 'active',
+        deliveryDate: { not: null },
+        warrantyMonths: { not: null },
+      },
+      select: {
+        id: true,
+        tenantId: true,
+        deliveryDate: true,
+        warrantyMonths: true,
+        salespersonId: true,
+        customerId: true,
+      },
     });
 
     let created = 0;
@@ -75,7 +90,11 @@ export class SchedulingService {
       if (expiry < now || expiry > lookahead) continue;
 
       const existing = await db.reminder.findFirst({
-        where: { tenantId: sale.tenantId, type: 'warranty_expiry', relatedSaleId: sale.id },
+        where: {
+          tenantId: sale.tenantId,
+          type: 'warranty_expiry',
+          relatedSaleId: sale.id,
+        },
       });
       if (existing) continue;
 
@@ -101,10 +120,15 @@ export class SchedulingService {
           relatedEntityId: sale.id,
         },
       });
-      await db.reminder.update({ where: { id: reminder.id }, data: { status: 'surfaced' } });
+      await db.reminder.update({
+        where: { id: reminder.id },
+        data: { status: 'surfaced' },
+      });
       created += 1;
     }
-    this.logger.log(`Generated ${created} warranty reminder(s) from ${candidateSales.length} candidate sale(s).`);
+    this.logger.log(
+      `Generated ${created} warranty reminder(s) from ${candidateSales.length} candidate sale(s).`,
+    );
     return { generated: created };
   }
 }

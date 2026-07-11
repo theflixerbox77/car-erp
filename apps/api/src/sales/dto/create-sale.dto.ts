@@ -1,5 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsDateString, IsInt, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+} from 'class-validator';
 
 export class CreateSaleDto {
   @IsOptional() @IsUUID() leadId?: string;
@@ -12,7 +20,9 @@ export class CreateSaleDto {
 
   @IsOptional() @IsUUID() salespersonId?: string;
 
-  @IsNumber() @Min(0) @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
   salePrice!: number;
 
   @IsOptional() @IsNumber() @Min(0) @Type(() => Number) discount?: number;

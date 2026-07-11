@@ -21,7 +21,11 @@ export default async function SalesReportPage() {
       </div>
       <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-white/[0.05] dark:bg-white/[0.03]">
         <h3 className="mb-4 text-sm font-semibold text-gray-800 dark:text-white/90">Monthly Revenue</h3>
-        <TrendAreaChart categories={report.trend.map((t) => t.month)} series={report.trend.map((t) => t.revenue)} name="Revenue" />
+        {report.trend.length === 0 ? (
+          <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">No sales yet.</p>
+        ) : (
+          <TrendAreaChart categories={report.trend.map((t) => t.month)} series={report.trend.map((t) => t.revenue)} name="Revenue" />
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,16 @@
-import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ExpensesService } from './expenses.service';
 import { CreateExpenseCategoryDto } from './dto/create-category.dto';
@@ -22,7 +34,10 @@ export class ExpensesController {
 
   @Post('categories')
   @Permissions('expenses.create')
-  createCategory(@CurrentUser() user: RequestUser, @Body() dto: CreateExpenseCategoryDto) {
+  createCategory(
+    @CurrentUser() user: RequestUser,
+    @Body() dto: CreateExpenseCategoryDto,
+  ) {
     return this.expensesService.createCategory(user.tenantId as string, dto);
   }
 
@@ -34,8 +49,14 @@ export class ExpensesController {
 
   @Post('recurring')
   @Permissions('expenses.create')
-  createRecurring(@CurrentUser() user: RequestUser, @Body() dto: CreateRecurringScheduleDto) {
-    return this.expensesService.createRecurringSchedule(user.tenantId as string, dto);
+  createRecurring(
+    @CurrentUser() user: RequestUser,
+    @Body() dto: CreateRecurringScheduleDto,
+  ) {
+    return this.expensesService.createRecurringSchedule(
+      user.tenantId as string,
+      dto,
+    );
   }
 
   @Patch('recurring/:id/deactivate')
@@ -70,15 +91,27 @@ export class ExpensesController {
 
   @Post(':id/receipt')
   @Permissions('expenses.create')
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }))
-  uploadReceipt(@CurrentUser() user: RequestUser, @Param('id') id: string, @UploadedFile() file?: Express.Multer.File) {
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }),
+  )
+  uploadReceipt(
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
     if (!file) throw new BadRequestException('No file provided');
-    return this.expensesService.uploadReceipt(user.tenantId as string, id, file);
+    return this.expensesService.uploadReceipt(
+      user.tenantId as string,
+      id,
+      file,
+    );
   }
 
   @Get(':id/receipt/signed-url')
   @Permissions('expenses.view')
   getReceiptUrl(@Param('id') id: string) {
-    return this.expensesService.getReceiptSignedUrl(id).then((url) => ({ url }));
+    return this.expensesService
+      .getReceiptSignedUrl(id)
+      .then((url) => ({ url }));
   }
 }

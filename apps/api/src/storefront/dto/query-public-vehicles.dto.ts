@@ -14,9 +14,12 @@ export class QueryPublicVehiclesDto {
   @IsOptional() @IsInt() @Type(() => Number) maxYear?: number;
   @IsOptional() @IsInt() @Type(() => Number) maxMileage?: number;
 
-  @IsOptional() @IsInt() @Min(1) @Max(48) @Type(() => Number) limit?: number = 24;
+  @IsOptional() @IsInt() @Min(1) @Max(48) @Type(() => Number) limit?: number =
+    24;
   @IsOptional() @IsInt() @Min(0) @Type(() => Number) offset?: number = 0;
 
-  @IsOptional() @IsIn(['created_at', 'year', 'selling_price', 'mileage']) sortBy?: 'created_at' | 'year' | 'selling_price' | 'mileage' = 'created_at';
+  @IsOptional()
+  @IsIn(['created_at', 'year', 'selling_price', 'mileage'])
+  sortBy?: 'created_at' | 'year' | 'selling_price' | 'mileage' = 'created_at';
   @IsOptional() @IsIn(['asc', 'desc']) sortDir?: 'asc' | 'desc' = 'desc';
 }

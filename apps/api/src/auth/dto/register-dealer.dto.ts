@@ -1,4 +1,10 @@
-import { IsEmail, IsOptional, IsString, Matches, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  Matches,
+  MinLength,
+} from 'class-validator';
 
 export class RegisterDealerDto {
   @IsString()
@@ -6,7 +12,9 @@ export class RegisterDealerDto {
   businessName!: string;
 
   @IsString()
-  @Matches(/^[a-z0-9-]+$/, { message: 'slug may only contain lowercase letters, numbers and hyphens' })
+  @Matches(/^[a-z0-9-]+$/, {
+    message: 'slug may only contain lowercase letters, numbers and hyphens',
+  })
   slug!: string;
 
   @IsString()

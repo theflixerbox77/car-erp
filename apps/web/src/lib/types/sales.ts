@@ -67,6 +67,30 @@ export interface Sale {
   documents: SaleDocument[];
 }
 
+export interface StorefrontInquiry {
+  id: string;
+  customerName: string;
+  phone: string | null;
+  email: string | null;
+  message: string | null;
+  source: string;
+  status: "new" | "contacted" | "converted" | "closed";
+  createdAt: string;
+  vehicle: { id: string; brand: string; model: string; year: number; stockNumber: string } | null;
+}
+
+export interface Booking {
+  id: string;
+  type: string;
+  fullName: string;
+  phone: string | null;
+  email: string | null;
+  note: string | null;
+  status: "pending" | "confirmed" | "completed" | "cancelled";
+  createdAt: string;
+  vehicle: { id: string; brand: string; model: string; year: number; stockNumber: string };
+}
+
 export interface SalePayment {
   id: string;
   amount: string;

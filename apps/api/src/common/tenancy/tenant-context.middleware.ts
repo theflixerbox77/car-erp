@@ -16,7 +16,8 @@ function extractToken(req: Request): string | null {
   if (authHeader?.startsWith('Bearer ')) {
     return authHeader.slice('Bearer '.length);
   }
-  const cookieToken = (req as any).cookies?.['access_token'];
+  const cookies = req.cookies as unknown as Record<string, string> | undefined;
+  const cookieToken = cookies?.['access_token'];
   return cookieToken ?? null;
 }
 
@@ -60,9 +61,13 @@ export class TenantContextMiddleware implements NestMiddleware {
         roleId: payload.roleId,
       };
 
-      const mode = payload.isPlatformAdmin && !payload.tenantId ? 'platform' : 'tenant';
+      const mode =
+        payload.isPlatformAdmin && !payload.tenantId ? 'platform' : 'tenant';
 
-      runWithTenantContext({ mode, tenantId: payload.tenantId, userId: payload.sub }, next);
+      runWithTenantContext(
+        { mode, tenantId: payload.tenantId, userId: payload.sub },
+        next,
+      );
     } catch {
       // Invalid/expired token: leave req.user unset, let JwtAuthGuard reject protected routes.
       next();

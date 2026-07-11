@@ -9,6 +9,7 @@ export const metadata: Metadata = { title: "Sales Pipeline" };
 
 export default async function PipelinePage() {
   const board = await api.get<LeadBoard>("/leads/board");
+  const totalLeads = Object.values(board).reduce((sum, leads) => sum + leads.length, 0);
 
   return (
     <div>
@@ -22,7 +23,15 @@ export default async function PipelinePage() {
         </Link>
       </div>
 
-      <PipelineBoard board={board} />
+      {totalLeads === 0 ? (
+        <div className="rounded-xl border border-gray-200 bg-white px-5 py-16 text-center dark:border-gray-800 dark:bg-white/[0.03]">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            No leads yet. Add your first lead to start tracking deals through the pipeline.
+          </p>
+        </div>
+      ) : (
+        <PipelineBoard board={board} />
+      )}
     </div>
   );
 }

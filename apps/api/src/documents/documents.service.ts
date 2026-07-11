@@ -22,23 +22,47 @@ export class DocumentsService {
     @Inject(STORAGE_PROVIDER) private readonly storage: StorageProvider,
   ) {}
 
-  async generate(tenantId: string, saleId: string, userId: string, type: string) {
+  async generate(
+    tenantId: string,
+    saleId: string,
+    userId: string,
+    type: string,
+  ) {
     const sale = await this.prisma.client.sale.findUnique({
       where: { id: saleId },
       include: { customer: true, vehicle: true, payments: true, tenant: true },
     });
     if (!sale) throw new NotFoundException('Sale not found');
 
-    const amountPaid = sale.payments.reduce((sum, p) => sum + Number(p.amount), 0);
+    const amountPaid = sale.payments.reduce(
+      (sum, p) => sum + Number(p.amount),
+      0,
+    );
     const netTotal = Number(sale.salePrice) - Number(sale.discount);
 
     const data: InvoiceData = {
       documentTitle: DOCUMENT_TITLES[type] ?? 'Document',
       invoiceNumber: `${sale.tenant.slug.toUpperCase()}-${sale.id.slice(0, 8).toUpperCase()}`,
       issuedAt: new Date().toLocaleDateString(),
-      dealer: { businessName: sale.tenant.businessName, address: sale.tenant.address, phone: sale.tenant.phone, email: null },
-      customer: { fullName: sale.customer.fullName, phone: sale.customer.phone, email: sale.customer.email, address: sale.customer.address },
-      vehicle: { brand: sale.vehicle.brand, model: sale.vehicle.model, year: sale.vehicle.year, stockNumber: sale.vehicle.stockNumber, vin: sale.vehicle.vin },
+      dealer: {
+        businessName: sale.tenant.businessName,
+        address: sale.tenant.address,
+        phone: sale.tenant.phone,
+        email: null,
+      },
+      customer: {
+        fullName: sale.customer.fullName,
+        phone: sale.customer.phone,
+        email: sale.customer.email,
+        address: sale.customer.address,
+      },
+      vehicle: {
+        brand: sale.vehicle.brand,
+        model: sale.vehicle.model,
+        year: sale.vehicle.year,
+        stockNumber: sale.vehicle.stockNumber,
+        vin: sale.vehicle.vin,
+      },
       salePrice: sale.salePrice.toString(),
       discount: sale.discount.toString(),
       amountPaid: amountPaid.toString(),
@@ -47,10 +71,19 @@ export class DocumentsService {
 
     // react-pdf's renderToBuffer types expect a <Document> element specifically; our
     // template is a component that renders one, which is structurally fine at runtime.
-    const buffer = await renderToBuffer(React.createElement(InvoiceDocument, { data }) as Parameters<typeof renderToBuffer>[0]);
+    const buffer = await renderToBuffer(
+      React.createElement(InvoiceDocument, { data }) as Parameters<
+        typeof renderToBuffer
+      >[0],
+    );
 
     const path = `${tenantId}/${saleId}/${type}-${randomUUID()}.pdf`;
-    await this.storage.upload('private', path, Buffer.from(buffer), 'application/pdf');
+    await this.storage.upload(
+      'private',
+      path,
+      Buffer.from(buffer),
+      'application/pdf',
+    );
 
     return this.prisma.client.saleDocument.create({
       data: { saleId, tenantId, type, storagePath: path, generatedBy: userId },
@@ -58,12 +91,18 @@ export class DocumentsService {
   }
 
   async list(saleId: string) {
-    return this.prisma.client.saleDocument.findMany({ where: { saleId }, orderBy: { generatedAt: 'desc' } });
+    return this.prisma.client.saleDocument.findMany({
+      where: { saleId },
+      orderBy: { generatedAt: 'desc' },
+    });
   }
 
   async getSignedUrl(saleId: string, documentId: string) {
-    const doc = await this.prisma.client.saleDocument.findUnique({ where: { id: documentId } });
-    if (!doc || doc.saleId !== saleId) throw new NotFoundException('Document not found');
+    const doc = await this.prisma.client.saleDocument.findUnique({
+      where: { id: documentId },
+    });
+    if (!doc || doc.saleId !== saleId)
+      throw new NotFoundException('Document not found');
     return this.storage.getSignedUrl(doc.storagePath);
   }
 }

@@ -36,19 +36,42 @@ export class SalesController {
 
   @Post(':id/payments')
   @Permissions('sales.update')
-  recordPayment(@CurrentUser() user: RequestUser, @Param('id') id: string, @Body() dto: RecordPaymentDto) {
-    return this.salesService.recordPayment(user.tenantId as string, id, user.id, dto);
+  recordPayment(
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: RecordPaymentDto,
+  ) {
+    return this.salesService.recordPayment(
+      user.tenantId as string,
+      id,
+      user.id,
+      dto,
+    );
   }
 
   @Post(':id/documents/:type')
   @Permissions('sales.update')
-  generateDocument(@CurrentUser() user: RequestUser, @Param('id') id: string, @Param('type') type: string) {
-    return this.documentsService.generate(user.tenantId as string, id, user.id, type);
+  generateDocument(
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+    @Param('type') type: string,
+  ) {
+    return this.documentsService.generate(
+      user.tenantId as string,
+      id,
+      user.id,
+      type,
+    );
   }
 
   @Get(':id/documents/:documentId/signed-url')
   @Permissions('sales.view')
-  getDocumentUrl(@Param('id') id: string, @Param('documentId') documentId: string) {
-    return this.documentsService.getSignedUrl(id, documentId).then((url) => ({ url }));
+  getDocumentUrl(
+    @Param('id') id: string,
+    @Param('documentId') documentId: string,
+  ) {
+    return this.documentsService
+      .getSignedUrl(id, documentId)
+      .then((url) => ({ url }));
   }
 }

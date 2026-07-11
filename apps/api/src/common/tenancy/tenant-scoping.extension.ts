@@ -13,18 +13,40 @@ export class MissingTenantContextError extends Error {
 }
 
 const WRITE_MANY_OPS = new Set(['updateMany', 'deleteMany']);
-const READ_OPS = new Set(['findFirst', 'findFirstOrThrow', 'findMany', 'findUnique', 'findUniqueOrThrow', 'count', 'aggregate', 'groupBy']);
+const READ_OPS = new Set([
+  'findFirst',
+  'findFirstOrThrow',
+  'findMany',
+  'findUnique',
+  'findUniqueOrThrow',
+  'count',
+  'aggregate',
+  'groupBy',
+]);
 
 /**
  * Injects `tenantId` into the correct clause for each Prisma operation shape.
  * This is intentionally exhaustive rather than best-effort: an operation that
  * falls through unhandled would run unscoped, which is exactly the failure
  * mode this whole mechanism exists to prevent.
+ *
+ * `args`/return are untyped because Prisma's `$allOperations` extension hook
+ * itself types them as `any` (the args shape depends on model x operation,
+ * a combinatorial union Prisma does not attempt to narrow at this hook) --
+ * this mirrors Prisma's own documented pattern for generic extensions. The
+ * unsafe-* rules are disabled for the same reason: every access below is
+ * necessarily against that `any`-typed shape.
  */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
 function scopeArgs(operation: string, args: any, tenantId: string): any {
   const scoped = { ...(args ?? {}) };
 
-  if (READ_OPS.has(operation) || WRITE_MANY_OPS.has(operation) || operation === 'delete' || operation === 'update') {
+  if (
+    READ_OPS.has(operation) ||
+    WRITE_MANY_OPS.has(operation) ||
+    operation === 'delete' ||
+    operation === 'update'
+  ) {
     scoped.where = { ...(scoped.where ?? {}), tenantId };
     return scoped;
   }
@@ -46,8 +68,11 @@ function scopeArgs(operation: string, args: any, tenantId: string): any {
     return scoped;
   }
 
-  throw new Error(`Tenant scoping does not know how to handle Prisma operation "${operation}" — add it to scopeArgs().`);
+  throw new Error(
+    `Tenant scoping does not know how to handle Prisma operation "${operation}" — add it to scopeArgs().`,
+  );
 }
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
 
 export function tenantScopingExtension() {
   return Prisma.defineExtension({

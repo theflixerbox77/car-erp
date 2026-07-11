@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { CreateLeaveRequestDto } from './dto/create-leave-request.dto';
@@ -50,8 +59,16 @@ export class EmployeesController {
 
   @Post('employees/:id/leave-requests')
   @Permissions('employees.view')
-  createLeaveRequest(@CurrentUser() user: RequestUser, @Param('id') id: string, @Body() dto: CreateLeaveRequestDto) {
-    return this.employeesService.createLeaveRequest(user.tenantId as string, id, dto);
+  createLeaveRequest(
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: CreateLeaveRequestDto,
+  ) {
+    return this.employeesService.createLeaveRequest(
+      user.tenantId as string,
+      id,
+      dto,
+    );
   }
 
   @Get('leave-requests')

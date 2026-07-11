@@ -1,5 +1,14 @@
 import { Type } from 'class-transformer';
-import { IsDateString, IsEmail, IsIn, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsEmail,
+  IsIn,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+} from 'class-validator';
 
 const SALARY_TYPES = ['fixed', 'commission', 'hybrid'] as const;
 

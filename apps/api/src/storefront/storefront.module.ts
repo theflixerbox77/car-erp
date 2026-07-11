@@ -10,7 +10,16 @@ import { StorefrontAuthGuard } from './storefront-auth.guard';
 
 @Module({
   imports: [JwtModule.register({})],
-  controllers: [StorefrontController, StorefrontAuthController, StorefrontCustomerController],
-  providers: [StorefrontService, StorefrontAuthService, StorefrontCustomerService, StorefrontAuthGuard],
+  controllers: [
+    StorefrontController,
+    StorefrontAuthController,
+    StorefrontCustomerController,
+  ],
+  providers: [
+    StorefrontService,
+    StorefrontAuthService,
+    StorefrontCustomerService,
+    StorefrontAuthGuard,
+  ],
 })
 export class StorefrontModule {}

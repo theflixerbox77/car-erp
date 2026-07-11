@@ -11,7 +11,12 @@ export interface UploadResult {
  * means writing a new class against this interface, not touching call sites.
  */
 export interface StorageProvider {
-  upload(visibility: StorageVisibility, path: string, file: Buffer, contentType: string): Promise<UploadResult>;
+  upload(
+    visibility: StorageVisibility,
+    path: string,
+    file: Buffer,
+    contentType: string,
+  ): Promise<UploadResult>;
   getPublicUrl(path: string): string;
   /** Only meaningful for private objects; throws if called against the public bucket. */
   getSignedUrl(path: string, expiresInSeconds?: number): Promise<string>;

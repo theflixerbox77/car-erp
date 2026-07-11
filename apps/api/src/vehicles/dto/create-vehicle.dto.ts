@@ -1,7 +1,25 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsDateString, IsIn, IsInt, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsDateString,
+  IsIn,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
-const STATUSES = ['available', 'reserved', 'sold', 'in_transit', 'repairing', 'booked', 'hidden'] as const;
+const STATUSES = [
+  'available',
+  'reserved',
+  'sold',
+  'in_transit',
+  'repairing',
+  'booked',
+  'hidden',
+] as const;
 
 export class CreateVehicleDto {
   @IsString()
@@ -42,7 +60,11 @@ export class CreateVehicleDto {
   @IsOptional() @IsNumber() @Min(0) @Type(() => Number) shippingCost?: number;
   @IsOptional() @IsNumber() @Min(0) @Type(() => Number) customsCost?: number;
   @IsOptional() @IsNumber() @Min(0) @Type(() => Number) repairCost?: number;
-  @IsOptional() @IsNumber() @Min(0) @Type(() => Number) registrationCost?: number;
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  registrationCost?: number;
 
   @IsOptional() @IsNumber() @Min(0) @Type(() => Number) sellingPrice?: number;
   @IsOptional() @IsNumber() @Type(() => Number) expectedProfit?: number;

@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { StorefrontService } from './storefront.service';
 import { QueryPublicVehiclesDto } from './dto/query-public-vehicles.dto';
 import { CreateInquiryDto } from './dto/create-inquiry.dto';
@@ -16,7 +17,10 @@ export class StorefrontController {
   }
 
   @Get('vehicles')
-  listVehicles(@Param('slug') slug: string, @Query() query: QueryPublicVehiclesDto) {
+  listVehicles(
+    @Param('slug') slug: string,
+    @Query() query: QueryPublicVehiclesDto,
+  ) {
     return this.storefrontService.listVehicles(slug, query);
   }
 
@@ -25,11 +29,13 @@ export class StorefrontController {
     return this.storefrontService.getVehicle(slug, id);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('inquiries')
   createInquiry(@Param('slug') slug: string, @Body() dto: CreateInquiryDto) {
     return this.storefrontService.createInquiry(slug, dto);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('bookings')
   createBooking(@Param('slug') slug: string, @Body() dto: CreateBookingDto) {
     return this.storefrontService.createBooking(slug, dto);

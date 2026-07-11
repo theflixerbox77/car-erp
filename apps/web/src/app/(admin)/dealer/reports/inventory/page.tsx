@@ -23,11 +23,19 @@ export default async function InventoryReportPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-white/[0.05] dark:bg-white/[0.03]">
           <h3 className="mb-4 text-sm font-semibold text-gray-800 dark:text-white/90">By Status</h3>
-          <DonutBreakdownChart labels={report.byStatus.map((s) => s.status)} series={report.byStatus.map((s) => s.count)} />
+          {report.byStatus.length === 0 ? (
+            <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">No vehicles yet.</p>
+          ) : (
+            <DonutBreakdownChart labels={report.byStatus.map((s) => s.status)} series={report.byStatus.map((s) => s.count)} />
+          )}
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-white/[0.05] dark:bg-white/[0.03]">
           <h3 className="mb-4 text-sm font-semibold text-gray-800 dark:text-white/90">By Brand</h3>
-          <RankedBarChart categories={report.byBrand.map((b) => b.brand)} series={report.byBrand.map((b) => b.count)} name="Vehicles" />
+          {report.byBrand.length === 0 ? (
+            <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">No vehicles yet.</p>
+          ) : (
+            <RankedBarChart categories={report.byBrand.map((b) => b.brand)} series={report.byBrand.map((b) => b.count)} name="Vehicles" />
+          )}
         </div>
       </div>
     </div>

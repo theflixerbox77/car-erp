@@ -118,3 +118,15 @@ export async function getDocumentSignedUrl(saleId: string, documentId: string): 
   const res = await api.get<{ url: string }>(`/sales/${saleId}/documents/${documentId}/signed-url`);
   return res.url;
 }
+
+// --- Storefront leads (inquiries & bookings) --------------------------------
+
+export async function updateInquiryStatusAction(id: string, status: string) {
+  await api.patch(`/inquiries/${id}/status`, { status });
+  revalidatePath("/dealer/crm/storefront-leads");
+}
+
+export async function updateBookingStatusAction(id: string, status: string) {
+  await api.patch(`/bookings/${id}/status`, { status });
+  revalidatePath("/dealer/crm/storefront-leads");
+}

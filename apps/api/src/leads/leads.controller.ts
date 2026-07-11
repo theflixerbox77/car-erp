@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { LeadsService } from './leads.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { ChangeStageDto } from './dto/change-stage.dto';
@@ -38,7 +46,16 @@ export class LeadsController {
 
   @Patch(':id/stage')
   @Permissions('sales.update')
-  changeStage(@CurrentUser() user: RequestUser, @Param('id') id: string, @Body() dto: ChangeStageDto) {
-    return this.leadsService.changeStage(user.tenantId as string, id, user.id, dto);
+  changeStage(
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: ChangeStageDto,
+  ) {
+    return this.leadsService.changeStage(
+      user.tenantId as string,
+      id,
+      user.id,
+      dto,
+    );
   }
 }

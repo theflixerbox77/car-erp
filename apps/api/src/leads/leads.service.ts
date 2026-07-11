@@ -5,7 +5,15 @@ import { ChangeStageDto, LEAD_STAGES } from './dto/change-stage.dto';
 
 const LEAD_INCLUDE = {
   customer: { select: { id: true, fullName: true, phone: true, email: true } },
-  vehicle: { select: { id: true, brand: true, model: true, year: true, stockNumber: true } },
+  vehicle: {
+    select: {
+      id: true,
+      brand: true,
+      model: true,
+      year: true,
+      stockNumber: true,
+    },
+  },
 };
 
 @Injectable()
@@ -19,7 +27,9 @@ export class LeadsService {
         customerId: dto.customerId,
         vehicleId: dto.vehicleId,
         source: dto.source,
-        expectedCloseDate: dto.expectedCloseDate ? new Date(dto.expectedCloseDate) : undefined,
+        expectedCloseDate: dto.expectedCloseDate
+          ? new Date(dto.expectedCloseDate)
+          : undefined,
         assignedTo: dto.assignedTo,
       },
       include: LEAD_INCLUDE,
@@ -41,19 +51,30 @@ export class LeadsService {
   }
 
   findAll() {
-    return this.prisma.client.lead.findMany({ include: LEAD_INCLUDE, orderBy: { createdAt: 'desc' } });
+    return this.prisma.client.lead.findMany({
+      include: LEAD_INCLUDE,
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async findOne(id: string) {
     const lead = await this.prisma.client.lead.findUnique({
       where: { id },
-      include: { ...LEAD_INCLUDE, stageHistory: { orderBy: { createdAt: 'desc' } } },
+      include: {
+        ...LEAD_INCLUDE,
+        stageHistory: { orderBy: { createdAt: 'desc' } },
+      },
     });
     if (!lead) throw new NotFoundException('Lead not found');
     return lead;
   }
 
-  async changeStage(tenantId: string, id: string, userId: string, dto: ChangeStageDto) {
+  async changeStage(
+    tenantId: string,
+    id: string,
+    userId: string,
+    dto: ChangeStageDto,
+  ) {
     const lead = await this.prisma.client.lead.findUnique({ where: { id } });
     if (!lead) throw new NotFoundException('Lead not found');
     if (lead.stage === dto.stage) return lead;
@@ -61,11 +82,21 @@ export class LeadsService {
     return this.prisma.client.$transaction(async (tx) => {
       const updated = await tx.lead.update({
         where: { id },
-        data: { stage: dto.stage, lostReason: dto.stage === 'lost' ? dto.lostReason : lead.lostReason },
+        data: {
+          stage: dto.stage,
+          lostReason: dto.stage === 'lost' ? dto.lostReason : lead.lostReason,
+        },
         include: LEAD_INCLUDE,
       });
       await tx.leadStageHistory.create({
-        data: { leadId: id, tenantId, fromStage: lead.stage, toStage: dto.stage, changedBy: userId, note: dto.note },
+        data: {
+          leadId: id,
+          tenantId,
+          fromStage: lead.stage,
+          toStage: dto.stage,
+          changedBy: userId,
+          note: dto.note,
+        },
       });
       return updated;
     });

@@ -20,12 +20,12 @@ export class TenantsController {
   }
 
   @Patch(':id/suspend')
-  suspend(@Param('id') id: string) {
-    return this.tenantsService.suspend(id);
+  suspend(@Param('id') id: string, @CurrentUser() user: RequestUser) {
+    return this.tenantsService.suspend(id, user.id);
   }
 
   @Patch(':id/reactivate')
-  reactivate(@Param('id') id: string) {
-    return this.tenantsService.reactivate(id);
+  reactivate(@Param('id') id: string, @CurrentUser() user: RequestUser) {
+    return this.tenantsService.reactivate(id, user.id);
   }
 }
