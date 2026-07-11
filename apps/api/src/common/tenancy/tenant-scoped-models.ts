@@ -10,4 +10,7 @@ export const TENANT_SCOPED_MODELS = new Set<string>([
   'Role',
   'User',
   'AuditLog',
+  'Vehicle',
+  'VehicleMedia',
+  'VehicleStatusHistory',
 ]);

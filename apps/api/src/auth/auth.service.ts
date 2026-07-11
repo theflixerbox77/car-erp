@@ -30,51 +30,61 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.ownerPassword, 12);
 
-    const result = await db.$transaction(async (tx) => {
-      const tenant = await tx.tenant.create({
-        data: {
-          slug: dto.slug,
-          businessName: dto.businessName,
-          phone: dto.phone,
-          subscriptionStatus: 'pending_approval',
-          subscriptionPlan: 'trial',
-        },
-      });
+    // Permissions are a static, global catalog (not tenant data) — read once, outside
+    // the transaction, so the transaction itself only does the writes that must be atomic.
+    const allPermissionCodes = [...new Set(SYSTEM_ROLE_TEMPLATES.flatMap((t) => t.permissions))];
+    const permissions = await db.permission.findMany({ where: { code: { in: allPermissionCodes } } });
+    const permissionIdByCode = new Map(permissions.map((p) => [p.code, p.id]));
 
-      let ownerRole: { id: string } | null = null;
-      for (const template of SYSTEM_ROLE_TEMPLATES) {
-        const role = await tx.role.create({
+    const result = await db.$transaction(
+      async (tx) => {
+        const tenant = await tx.tenant.create({
           data: {
-            tenantId: tenant.id,
-            name: template.name,
-            isSystem: true,
+            slug: dto.slug,
+            businessName: dto.businessName,
+            phone: dto.phone,
+            subscriptionStatus: 'pending_approval',
+            subscriptionPlan: 'trial',
           },
         });
-        if (template.name === OWNER_ROLE_NAME) ownerRole = role;
 
-        const permissions = await tx.permission.findMany({ where: { code: { in: template.permissions } } });
-        if (permissions.length > 0) {
-          await tx.rolePermission.createMany({
-            data: permissions.map((p) => ({ roleId: role.id, permissionId: p.id })),
-          });
+        // Single batched insert for all role templates instead of N sequential creates.
+        await tx.role.createMany({
+          data: SYSTEM_ROLE_TEMPLATES.map((t) => ({ tenantId: tenant.id, name: t.name, isSystem: true })),
+        });
+        const roles = await tx.role.findMany({ where: { tenantId: tenant.id } });
+        const roleIdByName = new Map(roles.map((r) => [r.name, r.id]));
+
+        const rolePermissionRows = SYSTEM_ROLE_TEMPLATES.flatMap((template) => {
+          const roleId = roleIdByName.get(template.name);
+          if (!roleId) return [];
+          return template.permissions
+            .map((code) => permissionIdByCode.get(code))
+            .filter((permissionId): permissionId is string => Boolean(permissionId))
+            .map((permissionId) => ({ roleId, permissionId }));
+        });
+        if (rolePermissionRows.length > 0) {
+          await tx.rolePermission.createMany({ data: rolePermissionRows });
         }
-      }
 
-      const owner = await tx.user.create({
-        data: {
-          tenantId: tenant.id,
-          email: dto.ownerEmail.toLowerCase(),
-          passwordHash,
-          fullName: dto.ownerFullName,
-          phone: dto.phone,
-          roleId: ownerRole?.id,
-          isPlatformAdmin: false,
-          status: 'active',
-        },
-      });
+        const ownerRoleId = roleIdByName.get(OWNER_ROLE_NAME);
+        const owner = await tx.user.create({
+          data: {
+            tenantId: tenant.id,
+            email: dto.ownerEmail.toLowerCase(),
+            passwordHash,
+            fullName: dto.ownerFullName,
+            phone: dto.phone,
+            roleId: ownerRoleId,
+            isPlatformAdmin: false,
+            status: 'active',
+          },
+        });
 
-      return { tenant, owner };
-    });
+        return { tenant, owner };
+      },
+      { timeout: 15000 },
+    );
 
     return this.issueTokens({
       id: result.owner.id,

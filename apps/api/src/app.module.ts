@@ -5,9 +5,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
+import { StorageModule } from './storage/storage.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { TenantsModule } from './tenants/tenants.module';
+import { VehiclesModule } from './vehicles/vehicles.module';
 import { TenantContextMiddleware } from './common/tenancy/tenant-context.middleware';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
@@ -17,9 +19,11 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
     ConfigModule.forRoot({ isGlobal: true }),
     JwtModule.register({}),
     PrismaModule,
+    StorageModule,
     AuthModule,
     UsersModule,
     TenantsModule,
+    VehiclesModule,
   ],
   controllers: [AppController],
   providers: [

@@ -59,6 +59,9 @@ model Tenant {
   users               User[]             @relation("TenantUsers")
   approvedByUser      User?              @relation("TenantApprovedBy", fields: [approvedBy], references: [id])
   auditLogs           AuditLog[]
+  vehicles            Vehicle[]
+  vehicleMedia        VehicleMedia[]
+  vehicleStatusHistory VehicleStatusHistory[]
 
   @@map("tenants")
 }
@@ -142,4 +145,97 @@ model AuditLog {
   @@index([tenantId])
   @@index([entityType, entityId])
   @@map("audit_logs")
+}
+
+model Vehicle {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId            String    @map("tenant_id") @db.Uuid
+  stockNumber         String    @map("stock_number")
+  vin                 String?
+  chassisNumber       String?   @map("chassis_number")
+  engineNumber        String?   @map("engine_number")
+  brand               String
+  model               String
+  trim                String?
+  year                Int
+  auctionGrade        String?   @map("auction_grade")
+  registrationNumber  String?   @map("registration_number")
+  registrationExpiry  DateTime? @map("registration_expiry") @db.Date
+  fuelType            String?   @map("fuel_type")
+  transmission        String?
+  driveType           String?   @map("drive_type")
+  mileage             Int?
+  color               String?
+  condition           String?
+  bodyType            String?   @map("body_type")
+  features            Json      @default("[]")
+
+  importCost         Decimal @default(0) @map("import_cost") @db.Decimal(14, 2)
+  auctionCost        Decimal @default(0) @map("auction_cost") @db.Decimal(14, 2)
+  shippingCost       Decimal @default(0) @map("shipping_cost") @db.Decimal(14, 2)
+  customsCost        Decimal @default(0) @map("customs_cost") @db.Decimal(14, 2)
+  repairCost         Decimal @default(0) @map("repair_cost") @db.Decimal(14, 2)
+  registrationCost   Decimal @default(0) @map("registration_cost") @db.Decimal(14, 2)
+  totalCost          Decimal @default(0) @map("total_cost") @db.Decimal(14, 2)
+  sellingPrice       Decimal? @map("selling_price") @db.Decimal(14, 2)
+  expectedProfit     Decimal? @map("expected_profit") @db.Decimal(14, 2)
+  minimumPrice       Decimal? @map("minimum_price") @db.Decimal(14, 2)
+  discountAmount     Decimal @default(0) @map("discount_amount") @db.Decimal(14, 2)
+
+  status     String   @default("available")
+  isFeatured Boolean  @default(false) @map("is_featured")
+  soldAt     DateTime? @map("sold_at")
+
+  createdBy String?  @map("created_by") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  tenant        Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  media         VehicleMedia[]
+  statusHistory VehicleStatusHistory[]
+
+  @@unique([tenantId, stockNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, brand, model])
+  @@map("vehicles")
+}
+
+model VehicleMedia {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vehicleId    String   @map("vehicle_id") @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  type         String
+  url          String
+  storagePath  String   @map("storage_path")
+  thumbnailUrl String?  @map("thumbnail_url")
+  sortOrder    Int      @default(0) @map("sort_order")
+  isPrimary    Boolean  @default(false) @map("is_primary")
+  uploadedBy   String?  @map("uploaded_by") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId])
+  @@index([tenantId])
+  @@map("vehicle_media")
+}
+
+model VehicleStatusHistory {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vehicleId  String   @map("vehicle_id") @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  fromStatus String?  @map("from_status")
+  toStatus   String   @map("to_status")
+  changedBy  String?  @map("changed_by") @db.Uuid
+  note       String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId])
+  @@index([tenantId])
+  @@map("vehicle_status_history")
 }
