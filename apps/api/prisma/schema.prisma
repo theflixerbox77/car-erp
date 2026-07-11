@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SubscriptionPlan {
+  trial
+  starter
+  professional
+  enterprise
+  enterprise_plus
+
+  @@map("subscription_plan")
+}
+
+enum SubscriptionStatus {
+  pending_approval
+  active
+  suspended
+  cancelled
+
+  @@map("subscription_status")
+}
+
+enum UserStatus {
+  active
+  invited
+  suspended
+
+  @@map("user_status")
+}
+
+model Tenant {
+  id                  String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug                String             @unique
+  businessName        String             @map("business_name")
+  legalName           String?            @map("legal_name")
+  logoUrl             String?            @map("logo_url")
+  address             String?
+  city                String?
+  country             String?
+  phone               String?
+  whatsappNumber      String?            @map("whatsapp_number")
+  subscriptionPlan    String             @default("trial") @map("subscription_plan")
+  subscriptionStatus  String             @default("pending_approval") @map("subscription_status")
+  approvedBy          String?            @map("approved_by") @db.Uuid
+  approvedAt          DateTime?          @map("approved_at")
+  storefrontSettings  Json               @default("{}") @map("storefront_settings")
+  customDomain        String?            @map("custom_domain")
+  createdAt           DateTime           @default(now()) @map("created_at")
+  updatedAt           DateTime           @default(now()) @map("updated_at")
+
+  roles               Role[]
+  users               User[]             @relation("TenantUsers")
+  approvedByUser      User?              @relation("TenantApprovedBy", fields: [approvedBy], references: [id])
+  auditLogs           AuditLog[]
+
+  @@map("tenants")
+}
+
+model Role {
+  id         String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String?          @map("tenant_id") @db.Uuid
+  name       String
+  isSystem   Boolean          @default(false) @map("is_system")
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  tenant           Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  users            User[]
+  rolePermissions  RolePermission[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("roles")
+}
+
+model User {
+  id              String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId        String?    @map("tenant_id") @db.Uuid
+  email           String
+  passwordHash    String     @map("password_hash")
+  fullName        String     @map("full_name")
+  phone           String?
+  avatarUrl       String?    @map("avatar_url")
+  roleId          String?    @map("role_id") @db.Uuid
+  isPlatformAdmin Boolean    @default(false) @map("is_platform_admin")
+  status          String     @default("active")
+  lastLoginAt     DateTime?  @map("last_login_at")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @default(now()) @map("updated_at")
+
+  tenant              Tenant?     @relation("TenantUsers", fields: [tenantId], references: [id], onDelete: Cascade)
+  role                Role?       @relation(fields: [roleId], references: [id])
+  approvedTenants     Tenant[]    @relation("TenantApprovedBy")
+  auditLogs           AuditLog[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@map("users")
+}
+
+model Permission {
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code   String @unique
+  module String
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String @map("role_id") @db.Uuid
+  permissionId String @map("permission_id") @db.Uuid
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model AuditLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String?  @map("tenant_id") @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String?  @map("entity_id") @db.Uuid
+  beforeData Json?    @map("before_data")
+  afterData  Json?    @map("after_data")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?   @relation(fields: [userId], references: [id])
+
+  @@index([tenantId])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
