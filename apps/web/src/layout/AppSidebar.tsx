@@ -38,6 +38,19 @@ const navItems: NavItem[] = [
     path: "/dealer/inventory",
   },
   {
+    icon: <PieChartIcon />,
+    name: "Sales",
+    subItems: [
+      { name: "Pipeline", path: "/dealer/sales/pipeline", pro: false },
+      { name: "Sales Records", path: "/dealer/sales/records", pro: false },
+    ],
+  },
+  {
+    icon: <UserCircleIcon />,
+    name: "Customers",
+    path: "/dealer/crm/customers",
+  },
+  {
     icon: <CalenderIcon />,
     name: "Calendar",
     path: "/calendar",
