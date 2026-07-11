@@ -99,6 +99,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
               Edit profile
             </DropdownItem>
           </li>
+          {!user.isPlatformAdmin && (
           <li>
             <DropdownItem
               onItemClick={closeDropdown}
@@ -124,6 +125,8 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
               Business settings
             </DropdownItem>
           </li>
+          )}
+          {!user.isPlatformAdmin && (
           <li>
             <DropdownItem
               onItemClick={closeDropdown}
@@ -149,6 +152,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
               Team
             </DropdownItem>
           </li>
+          )}
         </ul>
         <form action={logoutAction}>
           <button

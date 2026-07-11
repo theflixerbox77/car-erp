@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
 import { getCurrentUser } from "@/lib/dal";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,6 +12,8 @@ export const metadata: Metadata = { title: "Team Settings" };
 
 export default async function TeamSettingsPage() {
   const currentUser = await getCurrentUser();
+  // Platform admins have no tenant, so /users/team (TenantScopedGuard) isn't reachable for them.
+  if (currentUser?.isPlatformAdmin) redirect("/dealer/settings/profile");
 
   let team: TeamMember[];
   let roles: TeamRole[];
