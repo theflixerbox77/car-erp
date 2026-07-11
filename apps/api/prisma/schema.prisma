@@ -79,6 +79,10 @@ model Tenant {
   employeePerformance         EmployeePerformance[]
   reminders                   Reminder[]
   notifications                Notification[]
+  customerAccounts             CustomerAccount[]
+  wishlists                    Wishlist[]
+  bookings                     Booking[]
+  storefrontInquiries          StorefrontInquiry[]
 
   @@map("tenants")
 }
@@ -215,6 +219,9 @@ model Vehicle {
   leads         Lead[]
   sales         Sale[]
   expenses      Expense[]
+  wishlists     Wishlist[]
+  bookings      Booking[]
+  storefrontInquiries StorefrontInquiry[]
 
   @@unique([tenantId, stockNumber])
   @@index([tenantId])
@@ -610,4 +617,78 @@ model Notification {
   @@index([tenantId])
   @@index([userId, isRead])
   @@map("notifications")
+}
+
+model CustomerAccount {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  customerId   String?  @map("customer_id") @db.Uuid
+  email        String
+  passwordHash String   @map("password_hash")
+  fullName     String   @map("full_name")
+  phone        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  tenant   Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  wishlists Wishlist[]
+  bookings  Booking[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@map("customer_accounts")
+}
+
+model Wishlist {
+  customerAccountId String   @map("customer_account_id") @db.Uuid
+  vehicleId          String   @map("vehicle_id") @db.Uuid
+  tenantId           String   @map("tenant_id") @db.Uuid
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  customerAccount CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade)
+  vehicle         Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([customerAccountId, vehicleId])
+  @@index([tenantId])
+  @@map("wishlists")
+}
+
+model Booking {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String   @map("tenant_id") @db.Uuid
+  vehicleId          String   @map("vehicle_id") @db.Uuid
+  customerAccountId  String?  @map("customer_account_id") @db.Uuid
+  type               String   @default("reservation")
+  fullName           String   @map("full_name")
+  phone              String?
+  email              String?
+  note               String?
+  status             String   @default("pending")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle         Vehicle          @relation(fields: [vehicleId], references: [id])
+  customerAccount CustomerAccount? @relation(fields: [customerAccountId], references: [id])
+
+  @@index([tenantId])
+  @@map("bookings")
+}
+
+model StorefrontInquiry {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  vehicleId   String?  @map("vehicle_id") @db.Uuid
+  customerName String  @map("customer_name")
+  phone       String?
+  email       String?
+  message     String?
+  source      String   @default("contact_form")
+  status      String   @default("new")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle Vehicle? @relation(fields: [vehicleId], references: [id])
+
+  @@index([tenantId])
+  @@map("storefront_inquiries")
 }

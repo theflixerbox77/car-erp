@@ -18,6 +18,7 @@ import { EmployeesModule } from './employees/employees.module';
 import { SchedulingModule } from './scheduling/scheduling.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ReportsModule } from './reports/reports.module';
+import { StorefrontModule } from './storefront/storefront.module';
 import { TenantContextMiddleware } from './common/tenancy/tenant-context.middleware';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
@@ -40,6 +41,7 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
     SchedulingModule,
     NotificationsModule,
     ReportsModule,
+    StorefrontModule,
   ],
   controllers: [AppController],
   providers: [

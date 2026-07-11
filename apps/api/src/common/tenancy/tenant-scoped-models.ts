@@ -30,4 +30,8 @@ export const TENANT_SCOPED_MODELS = new Set<string>([
   'EmployeePerformance',
   'Reminder',
   'Notification',
+  'CustomerAccount',
+  'Wishlist',
+  'Booking',
+  'StorefrontInquiry',
 ]);
