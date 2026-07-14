@@ -1,5 +1,5 @@
 // Validated palette (see dataviz skill references/palette.md). Fixed order — never cycled/reassigned per filter.
-export const BRAND_BLUE = "#465FFF"; // TailAdmin's existing brand hue, used for single-series/sequential contexts.
+export const BRAND_BLUE = "#465FFF"; // Primary brand hue, used for single-series/sequential contexts.
 export const CATEGORICAL_PALETTE = [
   "#2a78d6", // blue
   "#1baf7a", // aqua
